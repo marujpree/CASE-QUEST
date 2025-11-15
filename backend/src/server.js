@@ -12,34 +12,40 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
+const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
 const classesRouter = require('./routes/classes');
 const alertsRouter = require('./routes/alerts');
 const flashcardSetsRouter = require('./routes/flashcardSets');
 const flashcardsRouter = require('./routes/flashcards');
+const webhookRouter = require('./routes/webhook');
 
+app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/classes', classesRouter);
 app.use('/api/alerts', alertsRouter);
 app.use('/api/flashcard-sets', flashcardSetsRouter);
 app.use('/api/flashcards', flashcardsRouter);
+app.use('/api/webhook', webhookRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'ScholarSync API is running' });
+  res.json({ status: 'ok', message: 'CampusSync API is running' });
 });
 
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Welcome to ScholarSync API',
+    message: 'Welcome to CampusSync API',
     version: '1.0.0',
-    endpoints: {
+      endpoints: {
+      auth: '/api/auth (signup, login, me)',
       users: '/api/users',
       classes: '/api/classes',
       alerts: '/api/alerts',
       flashcardSets: '/api/flashcard-sets',
       flashcards: '/api/flashcards',
+      webhook: '/api/webhook/email',
       health: '/api/health'
     }
   });
@@ -53,7 +59,7 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`ScholarSync API server is running on port ${PORT}`);
+  console.log(`CampusSync API server is running on port ${PORT}`);
   console.log(`Visit http://localhost:${PORT} to see available endpoints`);
 });
 

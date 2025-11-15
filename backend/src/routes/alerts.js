@@ -64,7 +64,8 @@ router.post('/process-email', async (req, res) => {
       alertData.title,
       alertData.message,
       alertData.emailSubject,
-      alertData.emailFrom
+      alertData.emailFrom,
+      alertData.urgency
     );
     
     res.status(201).json({ message: 'Alert created from email', alert });

@@ -24,6 +24,24 @@ function AlertCard({ alert, onMarkAsRead, onDelete }) {
     }
   };
 
+  const getUrgencyColor = (urgency) => {
+    switch (urgency) {
+      case 'high': return '#ff4757';
+      case 'medium': return '#ffa502';
+      case 'low': return '#2ed573';
+      default: return '#667eea';
+    }
+  };
+
+  const getUrgencyLabel = (urgency) => {
+    switch (urgency) {
+      case 'high': return 'High Priority';
+      case 'medium': return 'Medium Priority';
+      case 'low': return 'Low Priority';
+      default: return 'Normal';
+    }
+  };
+
   return (
     <div className={`alert-card ${!alert.is_read ? 'unread' : ''}`}>
       <div className="alert-card-header">
@@ -31,7 +49,17 @@ function AlertCard({ alert, onMarkAsRead, onDelete }) {
           <span className="alert-type-icon">{getAlertIcon(alert.type)}</span>
           <span className="alert-type-text">{alert.type.replace('_', ' ')}</span>
         </div>
-        {!alert.is_read && <span className="unread-badge">New</span>}
+        <div className="alert-badges">
+          {alert.urgency && (
+            <span 
+              className="urgency-badge" 
+              style={{ backgroundColor: getUrgencyColor(alert.urgency) }}
+            >
+              {getUrgencyLabel(alert.urgency)}
+            </span>
+          )}
+          {!alert.is_read && <span className="unread-badge">New</span>}
+        </div>
       </div>
       
       <h3>{alert.title}</h3>

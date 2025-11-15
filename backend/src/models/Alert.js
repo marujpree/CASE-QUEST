@@ -24,10 +24,10 @@ class Alert {
     return result.rows[0];
   }
 
-  static async create(userId, classId, type, title, message, emailSubject, emailFrom) {
+  static async create(userId, classId, type, title, message, emailSubject, emailFrom, urgency = 'medium') {
     const result = await pool.query(
-      'INSERT INTO alerts (user_id, class_id, type, title, message, email_subject, email_from) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [userId, classId, type, title, message, emailSubject, emailFrom]
+      'INSERT INTO alerts (user_id, class_id, type, title, message, email_subject, email_from, urgency) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+      [userId, classId, type, title, message, emailSubject, emailFrom, urgency]
     );
     return result.rows[0];
   }

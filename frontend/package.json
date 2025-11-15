@@ -1,7 +1,7 @@
 {
-  "name": "scholarsync-frontend",
+  "name": "campussync-frontend",
   "version": "1.0.0",
-  "description": "Frontend for ScholarSync - Academic management platform",
+  "description": "Frontend for CampusSync - Student assistant",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",

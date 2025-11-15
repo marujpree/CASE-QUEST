@@ -33,6 +33,26 @@ class Flashcard {
   static async delete(id) {
     await pool.query('DELETE FROM flashcards WHERE id = $1', [id]);
   }
+
+  static async updateReview(id, status) {
+    // status should be 'got_it' or 'forgot'
+    const result = await pool.query(
+      `UPDATE flashcards 
+       SET review_status = $1, 
+           last_reviewed_at = CURRENT_TIMESTAMP,
+           review_count = review_count + 1,
+           mastery_score = CASE 
+             WHEN $1 = 'got_it' THEN LEAST(100, mastery_score + 10)
+             WHEN $1 = 'forgot' THEN GREATEST(0, mastery_score - 5)
+             ELSE mastery_score
+           END,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2 
+       RETURNING *`,
+      [status, id]
+    );
+    return result.rows[0];
+  }
 }
 
 module.exports = Flashcard;

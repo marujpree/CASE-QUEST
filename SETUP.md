@@ -1,6 +1,6 @@
-# ScholarSync Setup Guide
+# CampusSync Setup Guide
 
-This guide will help you set up and run the ScholarSync application locally.
+This guide will help you set up and run the CampusSync application locally.
 
 ## Prerequisites
 
@@ -37,48 +37,61 @@ sudo systemctl start postgresql
 Open PostgreSQL command line or pgAdmin and create a new database:
 
 ```sql
-CREATE DATABASE scholarsync;
+CREATE DATABASE campussync;
 ```
 
 Or using the command line:
 ```bash
 # For Mac/Linux
 psql postgres
-CREATE DATABASE scholarsync;
+CREATE DATABASE campussync;
 \q
 
 # For Windows (in PowerShell)
 psql -U postgres
-CREATE DATABASE scholarsync;
+CREATE DATABASE campussync;
 \q
 ```
 
-### 3. Clone and Setup Backend
+### 3. Install Dependencies
+
+```bash
+# From the root directory, install all dependencies
+npm install
+
+# This will install root dependencies (concurrently) and you can also run:
+npm run install-all
+# This installs backend and frontend dependencies separately
+```
+
+### 4. Setup Backend Environment
 
 ```bash
 # Navigate to the backend directory
 cd backend
 
-# Install dependencies
-npm install
-
-# Create environment file
-cp .env.example .env
+# Create environment file (if .env.example exists)
+# Or create .env manually
 ```
 
-Edit the `.env` file with your database credentials:
+Edit the `backend/.env` file with your database credentials:
 ```env
 PORT=5000
-DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/scholarsync
+DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/campussync
+JWT_SECRET=your-secret-key-change-in-production
 NODE_ENV=development
 ```
 
 Replace `yourpassword` with your PostgreSQL password.
 
-### 4. Initialize Database Tables
+### 5. Initialize Database Tables
 
 ```bash
-# Still in the backend directory
+# From the root directory
+npm run init-db
+
+# Or from backend directory
+cd backend
 npm run init-db
 ```
 
@@ -93,38 +106,32 @@ Flashcards table created
 All tables created successfully!
 ```
 
-### 5. Start the Backend Server
+### 6. Start the Application
+
+**Single Command (Recommended):**
 
 ```bash
-# In the backend directory
+# From the root directory - runs both backend and frontend
 npm run dev
 ```
 
-You should see:
-```
-Connected to PostgreSQL database
-ScholarSync API server is running on port 5000
-Visit http://localhost:5000 to see available endpoints
-```
+This will start:
+- Backend server on `http://localhost:5000`
+- Frontend development server on `http://localhost:3000`
 
-Keep this terminal window open.
+The React development server will automatically open your browser.
 
-### 6. Setup and Start Frontend
+**Alternative - Separate Commands:**
 
-Open a new terminal window/tab:
+If you prefer to run them separately:
 
 ```bash
-# Navigate to the frontend directory
-cd frontend
+# Terminal 1 - Backend
+npm run dev-backend
 
-# Install dependencies
-npm install
-
-# Start the development server
-npm start
+# Terminal 2 - Frontend
+npm run dev-frontend
 ```
-
-The React development server will start and automatically open your browser to `http://localhost:3000`.
 
 ## Verifying the Setup
 
@@ -136,14 +143,14 @@ Open your browser or use curl to test the backend:
 # Test health endpoint
 curl http://localhost:5000/api/health
 
-# Should return: {"status":"ok","message":"ScholarSync API is running"}
+# Should return: {"status":"ok","message":"CampusSync API is running"}
 ```
 
 ### Frontend Test
 
 1. Open `http://localhost:3000` in your browser
-2. You should see the ScholarSync dashboard
-3. A demo user will be created automatically
+2. You should see the CampusSync login page
+3. Create an account or login to access the dashboard
 
 ## Using the Application
 
@@ -240,6 +247,7 @@ If you see warnings about missing dependencies in useEffect:
 ```env
 PORT=5000                              # Port for the backend server
 DATABASE_URL=postgresql://...          # PostgreSQL connection string
+JWT_SECRET=your-secret-key             # Secret key for JWT tokens (change in production)
 NODE_ENV=development                   # Environment (development/production)
 ```
 
@@ -287,4 +295,4 @@ If you encounter any issues not covered here, please check:
 - PostgreSQL documentation for database issues
 - React documentation for frontend issues
 
-Happy studying with ScholarSync! 📚
+Happy studying with CampusSync! 📚

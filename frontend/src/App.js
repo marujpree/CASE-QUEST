@@ -1,41 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import './App.css';
 import Dashboard from './pages/Dashboard';
 import Classes from './pages/Classes';
 import Flashcards from './pages/Flashcards';
 import Alerts from './pages/Alerts';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 import api from './services/api';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize with a default user for demo purposes
-    const initUser = async () => {
+    // Check for existing token and user
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+
+    if (token && userStr) {
       try {
-        const response = await api.get('/users');
-        if (response.data.length > 0) {
-          setCurrentUser(response.data[0]);
-        } else {
-          // Create a demo user if none exists
-          const newUser = await api.post('/users', {
-            email: 'demo@scholarsync.com',
-            name: 'Demo Student'
-          });
-          setCurrentUser(newUser.data);
-        }
+        const user = JSON.parse(userStr);
+        setCurrentUser(user);
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        // Verify token is still valid
+        api.get('/auth/me')
+          .then(response => {
+            setCurrentUser(response.data.user);
+          })
+          .catch(() => {
+            // Token invalid, clear it
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            delete api.defaults.headers.common['Authorization'];
+            setCurrentUser(null);
+          })
+          .finally(() => setLoading(false));
       } catch (error) {
-        console.error('Error initializing user:', error);
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setLoading(false);
       }
-    };
-    initUser();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  if (!currentUser) {
+  const handleLogin = (user) => {
+    setCurrentUser(user);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    delete api.defaults.headers.common['Authorization'];
+    setCurrentUser(null);
+  };
+
+  if (loading) {
     return (
       <div className="loading">
-        <h2>Loading ScholarSync...</h2>
+        <h2>Loading CampusSync...</h2>
       </div>
     );
   }
@@ -43,30 +70,45 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <nav className="navbar">
-          <div className="navbar-brand">
-            <h1>📚 ScholarSync</h1>
-            <p className="tagline">Your Academic Co-Pilot</p>
-          </div>
-          <ul className="navbar-menu">
-            <li><Link to="/">Dashboard</Link></li>
-            <li><Link to="/alerts">Alerts</Link></li>
-            <li><Link to="/classes">Classes</Link></li>
-            <li><Link to="/flashcards">Flashcards</Link></li>
-          </ul>
-          <div className="navbar-user">
-            <span>👤 {currentUser.name}</span>
-          </div>
-        </nav>
+        {currentUser ? (
+          <>
+            <nav className="navbar">
+              <div className="navbar-brand">
+                <h1>📚 CampusSync</h1>
+                <p className="tagline">Your Student Assistant</p>
+              </div>
+              <ul className="navbar-menu">
+                <li><Link to="/">Dashboard</Link></li>
+                <li><Link to="/alerts">Alerts</Link></li>
+                <li><Link to="/classes">Classes</Link></li>
+                <li><Link to="/flashcards">Flashcards</Link></li>
+              </ul>
+              <div className="navbar-user">
+                <span>👤 {currentUser.name}</span>
+                <button onClick={handleLogout} className="button-secondary" style={{ marginLeft: '10px', padding: '5px 10px' }}>
+                  Logout
+                </button>
+              </div>
+            </nav>
 
-        <main className="main-content">
+            <main className="main-content">
+              <Routes>
+                <Route path="/" element={<Dashboard userId={currentUser.id} />} />
+                <Route path="/alerts" element={<Alerts userId={currentUser.id} />} />
+                <Route path="/classes" element={<Classes userId={currentUser.id} />} />
+                <Route path="/flashcards" element={<Flashcards userId={currentUser.id} />} />
+                <Route path="/login" element={<Navigate to="/" replace />} />
+                <Route path="/signup" element={<Navigate to="/" replace />} />
+              </Routes>
+            </main>
+          </>
+        ) : (
           <Routes>
-            <Route path="/" element={<Dashboard userId={currentUser.id} />} />
-            <Route path="/alerts" element={<Alerts userId={currentUser.id} />} />
-            <Route path="/classes" element={<Classes userId={currentUser.id} />} />
-            <Route path="/flashcards" element={<Flashcards userId={currentUser.id} />} />
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/signup" element={<Signup onLogin={handleLogin} />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
-        </main>
+        )}
       </div>
     </Router>
   );
