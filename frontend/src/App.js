@@ -62,7 +62,7 @@ function App() {
   if (loading) {
     return (
       <div className="loading">
-        <h2>Loading CampusSync...</h2>
+        <h2>Loading Classify...</h2>
       </div>
     );
   }
@@ -74,7 +74,7 @@ function App() {
           <>
             <nav className="navbar">
               <div className="navbar-brand">
-                <h1>📚 CampusSync</h1>
+                <h1>📚 Classify</h1>
                 <p className="tagline">Your Student Assistant</p>
               </div>
               <ul className="navbar-menu">

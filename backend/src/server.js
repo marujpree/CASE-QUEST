@@ -30,13 +30,13 @@ app.use('/api/webhook', webhookRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'CampusSync API is running' });
+  res.json({ status: 'ok', message: 'Classify API is running' });
 });
 
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Welcome to CampusSync API',
+    message: 'Welcome to Classify API',
     version: '1.0.0',
       endpoints: {
       auth: '/api/auth (signup, login, me)',
@@ -59,7 +59,7 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`CampusSync API server is running on port ${PORT}`);
+  console.log(`Classify API server is running on port ${PORT}`);
   console.log(`Visit http://localhost:${PORT} to see available endpoints`);
 });
 

@@ -44,7 +44,7 @@ function Login({ onLogin }) {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
-          <h1>📚 CampusSync</h1>
+          <h1>📚 Classify</h1>
           <p>Welcome back! Please login to continue.</p>
         </div>
 

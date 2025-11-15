@@ -57,7 +57,7 @@ function Signup({ onLogin }) {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
-          <h1>📚 CampusSync</h1>
+          <h1>📚 Classify</h1>
           <p>Create your account to get started.</p>
         </div>
 
