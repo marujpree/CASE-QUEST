@@ -1,0 +1,64 @@
+.flashcard-set-card {
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.flashcard-set-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.set-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.flashcard-set-card h3 {
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.set-class {
+  color: #667eea;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.set-description {
+  color: #666;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.set-stats {
+  background: #f8f9fa;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.card-count {
+  color: #667eea;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.set-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.set-date {
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.set-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
