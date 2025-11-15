@@ -116,12 +116,26 @@ function FlashcardViewer({ set, onClose }) {
         onClick={handleFlip}
       >
         <div className="flashcard-content">
-          <div className="flashcard-label">
-            {showAnswer ? 'Answer' : 'Question'}
+          <div className="flashcard-front">
+            <div className="flashcard-label">Question</div>
+            <div className="flashcard-text">
+              {currentCard.question}
+            </div>
+            <div className="flashcard-hint">
+              Click to reveal answer
+            </div>
           </div>
-          <div className="flashcard-text">
-            {showAnswer ? currentCard.answer : currentCard.question}
+          
+          <div className="flashcard-back">
+            <div className="flashcard-label">Answer</div>
+            <div className="flashcard-text">
+              {currentCard.answer}
+            </div>
+            <div className="flashcard-hint">
+              Click to see question
+            </div>
           </div>
+
           <div className="flashcard-meta">
             <div className="flashcard-difficulty">
               Difficulty: <span className={`difficulty-${currentCard.difficulty}`}>
@@ -138,9 +152,6 @@ function FlashcardViewer({ set, onClose }) {
                 )}
               </div>
             )}
-          </div>
-          <div className="flashcard-hint">
-            Click to {showAnswer ? 'see question' : 'reveal answer'}
           </div>
         </div>
       </div>

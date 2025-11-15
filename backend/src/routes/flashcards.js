@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Flashcard = require('../models/Flashcard');
 const FlashcardSet = require('../models/FlashcardSet');
-const { generateFlashcardsByTopic } = require('../utils/flashcardGenerator');
+const { generateFlashcards, generateFlashcardsByTopic } = require('../utils/flashcardGenerator');
 
 // GET all flashcards for a set
 router.get('/set/:setId', async (req, res) => {
@@ -75,18 +75,27 @@ router.delete('/:id', async (req, res) => {
 // POST generate flashcards from topic/notes
 router.post('/generate', async (req, res) => {
   try {
-    const { userId, classId, topic, notes, count = 5, title, description } = req.body;
+    const { userId, classId, topic, notes, count = 10, title, description } = req.body;
     
-    if (!userId || !topic) {
-      return res.status(400).json({ error: 'User ID and topic are required' });
+    if (!userId || (!topic && !notes)) {
+      return res.status(400).json({ error: 'User ID and either topic or notes are required' });
     }
 
     // Create flashcard set
-    const setTitle = title || `Flashcards: ${topic}`;
-    const set = await FlashcardSet.create(userId, classId, setTitle, description || `Generated flashcards for ${topic}`);
+    const setTitle = title || `Flashcards: ${topic || 'Generated'}`;
+    const normalizedUserId = typeof userId === 'string' ? parseInt(userId, 10) : userId;
+    const normalizedClassId = classId === '' || classId === undefined ? null : (typeof classId === 'string' ? parseInt(classId, 10) : classId);
+    const set = await FlashcardSet.create(normalizedUserId, normalizedClassId, setTitle, description || `Generated flashcards for ${topic || 'your notes'}`);
     
-    // Generate flashcards
-    const generatedCards = generateFlashcardsByTopic(topic, count);
+    // Generate flashcards using AI
+    let generatedCards;
+    if (notes) {
+      // Generate from notes content
+      generatedCards = await generateFlashcards(notes, count);
+    } else {
+      // Generate from topic
+      generatedCards = await generateFlashcardsByTopic(topic, count);
+    }
     
     // Create flashcards in database
     const flashcards = [];
@@ -95,7 +104,7 @@ router.post('/generate', async (req, res) => {
         set.id,
         card.question,
         card.answer,
-        card.difficulty
+        card.difficulty || 'medium'
       );
       flashcards.push(flashcard);
     }
@@ -106,7 +115,9 @@ router.post('/generate', async (req, res) => {
       flashcards 
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error in /generate route:', error);
+    const status = error.status || 500;
+    res.status(status).json({ error: error.message });
   }
 });
 

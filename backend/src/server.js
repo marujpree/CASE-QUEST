@@ -19,6 +19,7 @@ const alertsRouter = require('./routes/alerts');
 const flashcardSetsRouter = require('./routes/flashcardSets');
 const flashcardsRouter = require('./routes/flashcards');
 const webhookRouter = require('./routes/webhook');
+const eventsRouter = require('./routes/events');
 
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
@@ -27,6 +28,7 @@ app.use('/api/alerts', alertsRouter);
 app.use('/api/flashcard-sets', flashcardSetsRouter);
 app.use('/api/flashcards', flashcardsRouter);
 app.use('/api/webhook', webhookRouter);
+app.use('/api/events', eventsRouter);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

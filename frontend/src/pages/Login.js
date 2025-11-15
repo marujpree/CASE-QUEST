@@ -44,8 +44,8 @@ function Login({ onLogin }) {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
-          <h1>📚 Classify</h1>
-          <p>Welcome back! Please login to continue.</p>
+          <h2>Welcome Back</h2>
+          <p>Sign in to your Classify account</p>
         </div>
 
         {error && <div className="error-message">{error}</div>}
@@ -59,7 +59,7 @@ function Login({ onLogin }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="your.email@example.com"
+              placeholder="student@university.edu"
             />
           </div>
 
@@ -76,14 +76,22 @@ function Login({ onLogin }) {
             />
           </div>
 
-          <button type="submit" className="button" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
+          <div className="form-actions">
+            <label className="checkbox-label">
+              <input type="checkbox" />
+              <span>Remember me</span>
+            </label>
+            <Link to="#" className="forgot-password">Forgot password?</Link>
+          </div>
+
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            Don't have an account? <Link to="/signup">Sign up</Link>
+            Don't have an account?<Link to="/signup">Sign up</Link>
           </p>
         </div>
       </div>

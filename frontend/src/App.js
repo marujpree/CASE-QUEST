@@ -5,8 +5,11 @@ import Dashboard from './pages/Dashboard';
 import Classes from './pages/Classes';
 import Flashcards from './pages/Flashcards';
 import Alerts from './pages/Alerts';
+import Calendar from './pages/Calendar';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Landing from './pages/Landing';
+import Logo from './components/Logo';
 import api from './services/api';
 
 function App() {
@@ -74,17 +77,24 @@ function App() {
           <>
             <nav className="navbar">
               <div className="navbar-brand">
-                <h1>📚 Classify</h1>
-                <p className="tagline">Your Student Assistant</p>
+                <Logo size={36} />
+                <div className="brand-text">
+                  <h1>Classify</h1>
+                  <p className="tagline">Your Student Assistant</p>
+                </div>
               </div>
               <ul className="navbar-menu">
                 <li><Link to="/">Dashboard</Link></li>
                 <li><Link to="/alerts">Alerts</Link></li>
                 <li><Link to="/classes">Classes</Link></li>
                 <li><Link to="/flashcards">Flashcards</Link></li>
+                <li><Link to="/calendar">Calendar</Link></li>
               </ul>
               <div className="navbar-user">
-                <span>👤 {currentUser.name}</span>
+                <div className="user-avatar">{currentUser.name.charAt(0).toUpperCase()}</div>
+                <div className="user-info">
+                  <span className="user-name">{currentUser.name}</span>
+                </div>
                 <button onClick={handleLogout} className="button-secondary" style={{ marginLeft: '10px', padding: '5px 10px' }}>
                   Logout
                 </button>
@@ -97,6 +107,7 @@ function App() {
                 <Route path="/alerts" element={<Alerts userId={currentUser.id} />} />
                 <Route path="/classes" element={<Classes userId={currentUser.id} />} />
                 <Route path="/flashcards" element={<Flashcards userId={currentUser.id} />} />
+                <Route path="/calendar" element={<Calendar userId={currentUser.id} />} />
                 <Route path="/login" element={<Navigate to="/" replace />} />
                 <Route path="/signup" element={<Navigate to="/" replace />} />
               </Routes>
@@ -104,9 +115,10 @@ function App() {
           </>
         ) : (
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route path="/signup" element={<Signup onLogin={handleLogin} />} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         )}
       </div>

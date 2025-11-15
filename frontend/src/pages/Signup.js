@@ -57,8 +57,8 @@ function Signup({ onLogin }) {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
-          <h1>📚 Classify</h1>
-          <p>Create your account to get started.</p>
+          <h2>Create Account</h2>
+          <p>Join Classify to start managing your academic life</p>
         </div>
 
         {error && <div className="error-message">{error}</div>}
@@ -84,7 +84,7 @@ function Signup({ onLogin }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="your.email@example.com"
+              placeholder="student@university.edu"
             />
           </div>
 
@@ -96,7 +96,7 @@ function Signup({ onLogin }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="At least 6 characters"
+              placeholder="Create a strong password"
               minLength="6"
             />
           </div>
@@ -109,19 +109,26 @@ function Signup({ onLogin }) {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              placeholder="Confirm your password"
+              placeholder="Re-enter your password"
               minLength="6"
             />
           </div>
 
-          <button type="submit" className="button" disabled={loading}>
-            {loading ? 'Creating account...' : 'Sign Up'}
+          <div className="terms-agreement">
+            <label className="checkbox-label">
+              <input type="checkbox" required />
+              <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
+            </label>
+          </div>
+
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Creating account...' : 'Get Started'}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            Already have an account? <Link to="/login">Login</Link>
+            Already have an account?<Link to="/login">Sign in</Link>
           </p>
         </div>
       </div>
