@@ -71,6 +71,26 @@ function extractClassInfo(subject, body) {
 }
 
 /**
+ * Calculate urgency based on alert type
+ * @param {string} type - Alert type
+ * @returns {string} - Urgency level (high, medium, low)
+ */
+function calculateUrgency(type) {
+  switch (type) {
+    case 'cancellation':
+    case 'exam_change':
+      return 'high';
+    case 'extra_credit':
+    case 'assignment':
+      return 'medium';
+    case 'schedule_change':
+      return 'low';
+    default:
+      return 'medium';
+  }
+}
+
+/**
  * Process incoming email and create alert if relevant
  * @param {string} from - Email sender
  * @param {string} subject - Email subject
@@ -84,10 +104,13 @@ function processEmail(from, subject, body) {
     return null;
   }
 
+  const urgency = calculateUrgency(classInfo.type);
+
   return {
     type: classInfo.type,
     title: classInfo.title,
     message: classInfo.message,
+    urgency: urgency,
     emailSubject: subject,
     emailFrom: from
   };
@@ -96,5 +119,6 @@ function processEmail(from, subject, body) {
 module.exports = {
   detectAlertType,
   extractClassInfo,
-  processEmail
+  processEmail,
+  calculateUrgency
 };

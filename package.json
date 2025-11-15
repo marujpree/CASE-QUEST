@@ -1,15 +1,21 @@
 {
-  "name": "scholarsync",
+  "name": "campussync",
   "version": "1.0.0",
-  "description": "ScholarSync - Academic management platform for students",
+  "description": "CampusSync - Student assistant for class updates and flashcards",
   "scripts": {
     "install-all": "cd backend && npm install && cd ../frontend && npm install",
+    "dev": "concurrently \"npm run dev-backend\" \"npm run dev-frontend\"",
+    "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
     "start-backend": "cd backend && npm start",
     "start-frontend": "cd frontend && npm start",
     "dev-backend": "cd backend && npm run dev",
+    "dev-frontend": "cd frontend && npm start",
     "init-db": "cd backend && npm run init-db"
   },
   "keywords": ["academic", "management", "pern", "education"],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
 }

@@ -8,6 +8,7 @@ const createTables = async () => {
         id SERIAL PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
         name VARCHAR(255) NOT NULL,
+        password_hash VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -40,6 +41,7 @@ const createTables = async () => {
         message TEXT NOT NULL,
         email_subject VARCHAR(255),
         email_from VARCHAR(255),
+        urgency VARCHAR(50) DEFAULT 'medium',
         detected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         is_read BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -69,6 +71,10 @@ const createTables = async () => {
         question TEXT NOT NULL,
         answer TEXT NOT NULL,
         difficulty VARCHAR(50) DEFAULT 'medium',
+        last_reviewed_at TIMESTAMP,
+        review_status VARCHAR(50) DEFAULT 'not_reviewed',
+        review_count INTEGER DEFAULT 0,
+        mastery_score INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );

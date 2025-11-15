@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Flashcard = require('../models/Flashcard');
+const FlashcardSet = require('../models/FlashcardSet');
+const { generateFlashcardsByTopic } = require('../utils/flashcardGenerator');
 
 // GET all flashcards for a set
 router.get('/set/:setId', async (req, res) => {
@@ -65,6 +67,64 @@ router.delete('/:id', async (req, res) => {
   try {
     await Flashcard.delete(req.params.id);
     res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST generate flashcards from topic/notes
+router.post('/generate', async (req, res) => {
+  try {
+    const { userId, classId, topic, notes, count = 5, title, description } = req.body;
+    
+    if (!userId || !topic) {
+      return res.status(400).json({ error: 'User ID and topic are required' });
+    }
+
+    // Create flashcard set
+    const setTitle = title || `Flashcards: ${topic}`;
+    const set = await FlashcardSet.create(userId, classId, setTitle, description || `Generated flashcards for ${topic}`);
+    
+    // Generate flashcards
+    const generatedCards = generateFlashcardsByTopic(topic, count);
+    
+    // Create flashcards in database
+    const flashcards = [];
+    for (const card of generatedCards) {
+      const flashcard = await Flashcard.create(
+        set.id,
+        card.question,
+        card.answer,
+        card.difficulty
+      );
+      flashcards.push(flashcard);
+    }
+    
+    res.status(201).json({ 
+      message: 'Flashcards generated successfully',
+      set, 
+      flashcards 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PATCH update flashcard review status
+router.patch('/:id/review', async (req, res) => {
+  try {
+    const { status } = req.body;
+    
+    if (!status || !['got_it', 'forgot'].includes(status)) {
+      return res.status(400).json({ error: 'Status must be "got_it" or "forgot"' });
+    }
+
+    const flashcard = await Flashcard.updateReview(req.params.id, status);
+    if (!flashcard) {
+      return res.status(404).json({ error: 'Flashcard not found' });
+    }
+    
+    res.json(flashcard);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
