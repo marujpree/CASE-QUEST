@@ -1,0 +1,15 @@
+{
+  "name": "scholarsync",
+  "version": "1.0.0",
+  "description": "ScholarSync - Academic management platform for students",
+  "scripts": {
+    "install-all": "cd backend && npm install && cd ../frontend && npm install",
+    "start-backend": "cd backend && npm start",
+    "start-frontend": "cd frontend && npm start",
+    "dev-backend": "cd backend && npm run dev",
+    "init-db": "cd backend && npm run init-db"
+  },
+  "keywords": ["academic", "management", "pern", "education"],
+  "author": "",
+  "license": "MIT"
+}

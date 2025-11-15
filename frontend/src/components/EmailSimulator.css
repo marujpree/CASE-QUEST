@@ -1,0 +1,32 @@
+.email-simulator {
+  margin-bottom: 2rem;
+  background: #f8f9ff !important;
+  border: 2px solid #667eea;
+}
+
+.email-simulator h3 {
+  color: #667eea;
+  margin-bottom: 0.5rem;
+}
+
+.simulator-description {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.templates {
+  margin-bottom: 1.5rem;
+}
+
+.templates label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.template-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}

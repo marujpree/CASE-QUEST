@@ -1,0 +1,14 @@
+.class-form {
+  margin-bottom: 2rem;
+}
+
+.class-form h3 {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
