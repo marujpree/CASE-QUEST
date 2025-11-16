@@ -22,7 +22,7 @@ export default function Calendar({ userId }) {
   const [events, setEvents] = useState([]);
   const [file, setFile] = useState(null);
   const [status, setStatus] = useState('');
-  const [form, setForm] = useState({ title: '', date: '', start: '', end: '', location: '', description: '' });
+  const [form, setForm] = useState({ title: '', date: '', start: '', end: '', location: '', description: '', priority: 'medium' });
 
   const load = async () => {
     const res = await api.get(`/events/user/${userId}`);
@@ -52,9 +52,9 @@ export default function Calendar({ userId }) {
     const startISO = new Date(`${form.date} ${form.start || '09:00'}`).toISOString();
     const endISO = form.end ? new Date(`${form.date} ${form.end}`).toISOString() : null;
     try {
-      await api.post('/events', { userId, title: form.title, description: form.description, location: form.location, startTime: startISO, endTime: endISO, allDay: !form.start && !form.end });
+      await api.post('/events', { userId, title: form.title, description: form.description, location: form.location, startTime: startISO, endTime: endISO, allDay: !form.start && !form.end, priority: form.priority });
       setStatus('Event created');
-      setForm({ title: '', date: '', start: '', end: '', location: '', description: '' });
+      setForm({ title: '', date: '', start: '', end: '', location: '', description: '', priority: 'medium' });
       load();
     } catch (e) {
       setStatus(`Error: ${e.response?.data?.error || e.message}`);
@@ -63,6 +63,17 @@ export default function Calendar({ userId }) {
 
   const exportIcs = () => {
     window.location.href = `/api/events/user/${userId}/ics`;
+  };
+
+  const handleDelete = async (eventId) => {
+    if (!window.confirm('Are you sure you want to delete this event?')) return;
+    try {
+      await api.delete(`/events/${eventId}`);
+      setStatus('Event deleted');
+      load();
+    } catch (e) {
+      setStatus(`Error: ${e.response?.data?.error || e.message}`);
+    }
   };
 
   return (
@@ -100,6 +111,11 @@ export default function Calendar({ userId }) {
           </div>
           <div className="form-row">
             <input className="form-input" placeholder="Location" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} />
+            <select className="form-select" value={form.priority} onChange={e => setForm({ ...form, priority: e.target.value })}>
+              <option value="low">Low Priority</option>
+              <option value="medium">Medium Priority</option>
+              <option value="high">High Priority</option>
+            </select>
           </div>
           <div className="form-row">
             <textarea className="form-textarea" placeholder="Notes" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
@@ -115,7 +131,14 @@ export default function Calendar({ userId }) {
           <div className="events-list">
             {events.map(ev => (
               <div className="event-card" key={ev.id}>
-                <strong>{ev.title}</strong>
+                <div className="event-header">
+                  <strong>{ev.title}</strong>
+                  {ev.priority && (
+                    <span className={`priority-badge ${ev.priority}`}>
+                      {ev.priority.charAt(0).toUpperCase() + ev.priority.slice(1)}
+                    </span>
+                  )}
+                </div>
                 <div>{new Date(ev.start_time).toLocaleString()} {ev.end_time ? ' - ' + new Date(ev.end_time).toLocaleTimeString() : ''}</div>
                 {ev.location && <div>{ev.location}</div>}
                 {ev.description && <div className="hint">{ev.description}</div>}
@@ -124,6 +147,7 @@ export default function Calendar({ userId }) {
                   {ev.start_time && (
                     <a className="btn-primary" href={buildGoogleTemplateUrl({ title: ev.title, details: ev.description, location: ev.location, startISO: ev.start_time, endISO: ev.end_time })} target="_blank" rel="noreferrer">Add to Google (no auth)</a>
                   )}
+                  <button className="btn-delete" onClick={() => handleDelete(ev.id)}>Delete</button>
                 </div>
               </div>
             ))}

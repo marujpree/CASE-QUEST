@@ -25,16 +25,43 @@ function Flashcards({ userId }) {
 
   const handleCreate = async (setData) => {
     try {
-      if (setData.generate && setData.topic) {
-        // Generate with AI
-        await api.post('/flashcard-sets/generate', {
-          userId,
-          classId: setData.classId,
-          title: setData.title,
-          description: setData.description,
-          topic: setData.topic,
-          count: setData.count || 5
-        });
+      if (setData.generate) {
+        if (setData.generationType === 'pdf' && setData.pdfFile) {
+          // Generate from PDF upload
+          const formData = new FormData();
+          formData.append('pdf', setData.pdfFile);
+          formData.append('userId', userId);
+          formData.append('classId', setData.classId || '');
+          formData.append('title', setData.title);
+          formData.append('description', setData.description);
+          formData.append('count', setData.count || 5);
+
+          await api.post('/flashcard-sets/generate-from-pdf', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+        } else if (setData.generationType === 'notes' && setData.notes) {
+          // Generate from notes
+          await api.post('/flashcard-sets/generate', {
+            userId,
+            classId: setData.classId,
+            title: setData.title,
+            description: setData.description,
+            notes: setData.notes,
+            count: setData.count || 5
+          });
+        } else if (setData.generationType === 'topic' && setData.topic) {
+          // Generate from topic
+          await api.post('/flashcard-sets/generate', {
+            userId,
+            classId: setData.classId,
+            title: setData.title,
+            description: setData.description,
+            topic: setData.topic,
+            count: setData.count || 5
+          });
+        }
       } else {
         // Create empty set
         await api.post('/flashcard-sets', {
@@ -48,6 +75,7 @@ function Flashcards({ userId }) {
       setShowForm(false);
     } catch (error) {
       console.error('Error creating flashcard set:', error);
+      alert(error.response?.data?.error || 'Error creating flashcard set');
     }
   };
 

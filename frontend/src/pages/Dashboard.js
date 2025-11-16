@@ -10,6 +10,9 @@ function Dashboard({ userId }) {
     unreadAlerts: 0
   });
   const [recentAlerts, setRecentAlerts] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [flashcardSets, setFlashcardSets] = useState([]);
+  const [selectedClassIndex, setSelectedClassIndex] = useState(0);
   const [topic, setTopic] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,15 +33,21 @@ function Dashboard({ userId }) {
 
       const alerts = alertsRes.data;
       const unread = alerts.filter(a => !a.is_read).length;
+      const userClasses = classesRes.data;
+      const userFlashcardSets = flashcardsRes.data;
 
       setStats({
         alerts: alerts.length,
-        classes: classesRes.data.length,
-        flashcardSets: flashcardsRes.data.length,
+        classes: userClasses.length,
+        flashcardSets: userFlashcardSets.length,
         unreadAlerts: unread
       });
 
-      setRecentAlerts(alerts.slice(0, 5));
+      // Show only unread alerts in Today's Alerts section
+      const unreadAlerts = alerts.filter(a => !a.is_read);
+      setRecentAlerts(unreadAlerts.slice(0, 5));
+      setClasses(userClasses);
+      setFlashcardSets(userFlashcardSets);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     }
@@ -74,6 +83,15 @@ function Dashboard({ userId }) {
       setGenerateMessage(`❌ Error: ${error.response?.data?.error || error.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMarkAsRead = async (alertId) => {
+    try {
+      await api.patch(`/alerts/${alertId}/read`);
+      loadDashboardData(); // Reload to update the alerts list
+    } catch (error) {
+      console.error('Error marking alert as read:', error);
     }
   };
 
@@ -117,9 +135,9 @@ function Dashboard({ userId }) {
                     <h4 className="alert-title">{alert.title}</h4>
                     <p className="alert-description">{alert.message.substring(0, 80)}</p>
                     <div className="alert-footer">
-                      <span className="alert-meta">From: Prof. Name • {new Date(alert.detected_at).toLocaleDateString()}</span>
+                      <span className="alert-meta">From: {alert.email_from || 'System'} • {new Date(alert.detected_at).toLocaleDateString()}</span>
                       <div className="alert-actions">
-                        <button className="btn-mark-read">Mark Read</button>
+                        <button className="btn-mark-read" onClick={() => handleMarkAsRead(alert.id)}>Mark Read</button>
                         <button className="btn-add-calendar">Add to Calendar</button>
                       </div>
                     </div>
@@ -133,18 +151,75 @@ function Dashboard({ userId }) {
         <div className="dashboard-right">
           <div className="quick-study-section">
             <h3>Quick Study</h3>
-            <div className="flashcard-tabs">
-              <button className="tab-btn active">PSYC 2301</button>
-              <button className="tab-btn">Calculus II</button>
-              <button className="tab-btn">CS 101</button>
-            </div>
+            {classes.length > 0 ? (
+              <>
+                <div className="flashcard-tabs">
+                  {classes.slice(0, 3).map((cls, index) => (
+                    <button 
+                      key={cls.id} 
+                      className={`tab-btn ${selectedClassIndex === index ? 'active' : ''}`}
+                      onClick={() => setSelectedClassIndex(index)}
+                    >
+                      {cls.code}
+                    </button>
+                  ))}
+                </div>
 
-            <div className="flashcard-preview">
-              <p className="flashcard-meta">PSYC 2301 — Flashcards due today: 8</p>
-              <p className="flashcard-question">Q: What is classical conditioning?</p>
-              <p className="flashcard-hint">Tap "Start Session" to review 5 cards.</p>
-              <button className="btn-primary">Start 5-card Session</button>
-            </div>
+                <div className="flashcard-preview">
+                  {(() => {
+                    const selectedClass = classes[selectedClassIndex];
+                    const classSets = flashcardSets.filter(set => set.class_id === selectedClass.id);
+                    const totalCards = classSets.reduce((sum, set) => sum + (set.card_count || 0), 0);
+                    
+                    return (
+                      <>
+                        <p className="flashcard-meta">
+                          {selectedClass.name} ({selectedClass.code}) — {classSets.length} flashcard set{classSets.length !== 1 ? 's' : ''}
+                        </p>
+                        {classSets.length > 0 ? (
+                          <>
+                            <p className="flashcard-question">
+                              Total cards available: {totalCards}
+                            </p>
+                            <p className="flashcard-hint">
+                              Start reviewing your {selectedClass.code} flashcards.
+                            </p>
+                            <button 
+                              className="btn-primary"
+                              onClick={() => window.location.href = '/flashcards'}
+                            >
+                              Start Study Session
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <p className="flashcard-question">No flashcards yet for this class</p>
+                            <p className="flashcard-hint">Create flashcards below to start studying.</p>
+                            <button 
+                              className="btn-primary"
+                              onClick={() => window.location.href = '/flashcards'}
+                            >
+                              Create Flashcards
+                            </button>
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              </>
+            ) : (
+              <div className="empty-state">
+                <p>No classes yet. Add classes to see your flashcard study options.</p>
+                <button 
+                  className="btn-primary"
+                  onClick={() => window.location.href = '/classes'}
+                  style={{ marginTop: '1rem' }}
+                >
+                  Add Classes
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="create-flashcards-section">

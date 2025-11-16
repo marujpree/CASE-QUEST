@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
+const { startEventReminderService } = require('./utils/eventReminders');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -63,6 +64,9 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Classify API server is running on port ${PORT}`);
   console.log(`Visit http://localhost:${PORT} to see available endpoints`);
+  
+  // Start the event reminder service
+  startEventReminderService();
 });
 
 module.exports = app;

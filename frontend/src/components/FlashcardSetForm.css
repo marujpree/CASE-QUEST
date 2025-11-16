@@ -23,3 +23,24 @@
   width: auto;
   cursor: pointer;
 }
+
+.file-info {
+  display: block;
+  margin-top: 0.5rem;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+input[type="file"] {
+  padding: 0.5rem;
+  border: 2px dashed #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+
+input[type="file"]:hover {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+}
+

@@ -1,8 +1,25 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const FlashcardSet = require('../models/FlashcardSet');
 const Flashcard = require('../models/Flashcard');
 const { generateFlashcards, generateFlashcardsByTopic } = require('../utils/flashcardGenerator');
+const { extractTextFromPDF } = require('../utils/pdfParser');
+
+// Configure multer for file uploads (store in memory)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'), false);
+    }
+  }
+});
 
 // GET all flashcard sets for a user
 router.get('/user/:userId', async (req, res) => {
@@ -86,6 +103,70 @@ router.post('/generate', async (req, res) => {
     });
   } catch (error) {
     console.error('Error in /generate route:', error);
+    const status = error.status || 500;
+    res.status(status).json({ error: error.message });
+  }
+});
+
+// POST upload PDF and generate flashcards
+router.post('/generate-from-pdf', upload.single('pdf'), async (req, res) => {
+  try {
+    const { userId, classId, title, description, count = 10 } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'PDF file is required' });
+    }
+
+    console.log('Processing PDF file:', req.file.originalname);
+    
+    // Extract text from PDF
+    const pdfText = await extractTextFromPDF(req.file.buffer);
+    
+    if (!pdfText || pdfText.trim().length < 100) {
+      return res.status(400).json({ 
+        error: 'Could not extract sufficient text from PDF. Please ensure the PDF contains readable text.' 
+      });
+    }
+
+    console.log(`Extracted ${pdfText.length} characters from PDF`);
+
+    // Create the flashcard set
+    const setTitle = title || `Flashcards from ${req.file.originalname}`;
+    const setDescription = description || `Generated from PDF: ${req.file.originalname}`;
+    const normalizedUserId = typeof userId === 'string' ? parseInt(userId, 10) : userId;
+    const normalizedClassId = classId === '' || classId === undefined ? null : (typeof classId === 'string' ? parseInt(classId, 10) : classId);
+    const set = await FlashcardSet.create(normalizedUserId, normalizedClassId, setTitle, setDescription);
+    
+    // Generate flashcards from extracted text using AI
+    const generatedCards = await generateFlashcards(pdfText, count);
+    
+    // Create flashcards in database
+    const flashcards = [];
+    for (const card of generatedCards) {
+      const flashcard = await Flashcard.create(
+        set.id,
+        card.question,
+        card.answer,
+        card.difficulty || 'medium'
+      );
+      flashcards.push(flashcard);
+    }
+    
+    res.status(201).json({ 
+      message: 'Flashcards generated from PDF successfully',
+      set, 
+      flashcards,
+      pdfInfo: {
+        filename: req.file.originalname,
+        extractedLength: pdfText.length
+      }
+    });
+  } catch (error) {
+    console.error('Error in /generate-from-pdf route:', error);
     const status = error.status || 500;
     res.status(status).json({ error: error.message });
   }

@@ -4,11 +4,55 @@ const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const { createEvents, createEvent } = require('ics');
 const Event = require('../models/Event');
+const Alert = require('../models/Alert');
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 function toDateParts(d) {
   return [d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes()];
+}
+
+// Helper function to create alert for event
+async function createEventAlert(event, userId) {
+  const now = new Date();
+  const eventTime = new Date(event.start_time || event.startTime);
+  
+  // Check if event is in the past or happening soon (within 24 hours)
+  const hoursDiff = (eventTime - now) / (1000 * 60 * 60);
+  
+  let alertTitle = '';
+  let alertMessage = '';
+  let alertType = 'event_reminder';
+  
+  if (hoursDiff < 0) {
+    // Event is in the past
+    alertTitle = `Past Event: ${event.title}`;
+    alertMessage = `The event "${event.title}" was scheduled for ${eventTime.toLocaleString()}. You may want to check if this date is correct.`;
+  } else if (hoursDiff <= 24) {
+    // Event is within 24 hours
+    alertTitle = `Upcoming Event: ${event.title}`;
+    alertMessage = `Your event "${event.title}" is scheduled for ${eventTime.toLocaleString()}${event.location ? ` at ${event.location}` : ''}.`;
+  } else {
+    // Event is more than 24 hours away - no immediate alert
+    return null;
+  }
+  
+  try {
+    const alert = await Alert.create(
+      userId,
+      null, // classId - events may not be tied to classes
+      alertType,
+      alertTitle,
+      alertMessage,
+      null,
+      'System',
+      hoursDiff < 0 ? 'low' : 'medium'
+    );
+    return alert;
+  } catch (error) {
+    console.error('Error creating event alert:', error);
+    return null;
+  }
 }
 
 // GET events for a user
@@ -26,20 +70,26 @@ router.get('/user/:userId', async (req, res) => {
 // POST create manual event
 router.post('/', async (req, res) => {
   try {
-    const { userId, title, description, location, startTime, endTime, allDay } = req.body;
+    const { userId, title, description, location, startTime, endTime, allDay, priority } = req.body;
     if (!userId || !title || !startTime) {
       return res.status(400).json({ error: 'userId, title, startTime are required' });
     }
+    const normalizedUserId = typeof userId === 'string' ? parseInt(userId, 10) : userId;
     const created = await Event.create({
-      userId: typeof userId === 'string' ? parseInt(userId, 10) : userId,
+      userId: normalizedUserId,
       title,
       description,
       location,
       startTime: new Date(startTime),
       endTime: endTime ? new Date(endTime) : null,
       allDay: !!allDay,
-      source: 'manual'
+      source: 'manual',
+      priority: priority || 'medium'
     });
+    
+    // Create alert for the event if it's in the past or upcoming soon
+    await createEventAlert(created, normalizedUserId);
+    
     res.status(201).json(created);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -98,8 +148,9 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
       if (start) {
         const title = line.replace(/\s*-\s*\d{1,2}:\d{2}\s*(AM|PM)?/i, '').replace(dateRe1, '').replace(dateRe2, '').trim() || 'Imported Event';
+        const normalizedUserId = parseInt(userId, 10);
         const ev = await Event.create({
-          userId: parseInt(userId, 10),
+          userId: normalizedUserId,
           title,
           description: line,
           location: null,
@@ -109,6 +160,9 @@ router.post('/upload', upload.single('file'), async (req, res) => {
           source: 'pdf'
         });
         created.push(ev);
+        
+        // Create alert for the event if it's in the past or upcoming soon
+        await createEventAlert(ev, normalizedUserId);
       }
     }
 

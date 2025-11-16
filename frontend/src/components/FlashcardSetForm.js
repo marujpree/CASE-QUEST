@@ -9,7 +9,10 @@ function FlashcardSetForm({ userId, onSubmit, onCancel }) {
     classId: '',
     description: '',
     generate: true,
+    generationType: 'topic', // 'topic', 'notes', or 'pdf'
     topic: '',
+    notes: '',
+    pdfFile: null,
     count: 5
   });
 
@@ -32,6 +35,19 @@ function FlashcardSetForm({ userId, onSubmit, onCancel }) {
       ...formData,
       [e.target.name]: value
     });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      setFormData({
+        ...formData,
+        pdfFile: file
+      });
+    } else if (file) {
+      alert('Please select a PDF file');
+      e.target.value = '';
+    }
   };
 
   const handleSubmit = (e) => {
@@ -92,16 +108,63 @@ function FlashcardSetForm({ userId, onSubmit, onCancel }) {
         {formData.generate && (
           <>
             <div className="input-group">
-              <label>Topic for AI Generation *</label>
-              <input
-                type="text"
-                name="topic"
-                value={formData.topic}
+              <label>Generation Method</label>
+              <select 
+                name="generationType" 
+                value={formData.generationType} 
                 onChange={handleChange}
-                required={formData.generate}
-                placeholder="e.g., Cell Biology, World War II, Calculus"
-              />
+              >
+                <option value="topic">From Topic</option>
+                <option value="notes">From Your Notes</option>
+                <option value="pdf">From PDF Upload</option>
+              </select>
             </div>
+
+            {formData.generationType === 'topic' && (
+              <div className="input-group">
+                <label>Topic for AI Generation *</label>
+                <input
+                  type="text"
+                  name="topic"
+                  value={formData.topic}
+                  onChange={handleChange}
+                  required={formData.generate && formData.generationType === 'topic'}
+                  placeholder="e.g., Cell Biology, World War II, Calculus"
+                />
+              </div>
+            )}
+
+            {formData.generationType === 'notes' && (
+              <div className="input-group">
+                <label>Your Study Notes *</label>
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  required={formData.generate && formData.generationType === 'notes'}
+                  placeholder="Paste your study notes here..."
+                  rows="6"
+                />
+              </div>
+            )}
+
+            {formData.generationType === 'pdf' && (
+              <div className="input-group">
+                <label>Upload PDF File *</label>
+                <input
+                  type="file"
+                  name="pdfFile"
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  required={formData.generate && formData.generationType === 'pdf'}
+                />
+                {formData.pdfFile && (
+                  <small className="file-info">
+                    Selected: {formData.pdfFile.name} ({(formData.pdfFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </small>
+                )}
+              </div>
+            )}
 
             <div className="input-group">
               <label>Number of Cards</label>

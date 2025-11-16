@@ -24,11 +24,11 @@ class Event {
     return res.rows;
   }
 
-  static async create({ userId, title, description, location, startTime, endTime, allDay = false, source = 'manual' }) {
+  static async create({ userId, title, description, location, startTime, endTime, allDay = false, source = 'manual', priority = 'medium' }) {
     const res = await pool.query(
-      `INSERT INTO events (user_id, title, description, location, start_time, end_time, all_day, source)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-      [userId, title, description || null, location || null, startTime, endTime || null, allDay, source]
+      `INSERT INTO events (user_id, title, description, location, start_time, end_time, all_day, source, priority)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      [userId, title, description || null, location || null, startTime, endTime || null, allDay, source, priority]
     );
     return res.rows[0];
   }
